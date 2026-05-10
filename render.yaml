@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: pronote-web-backend
+    env: node
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production

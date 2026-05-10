@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS·ENT — Pronote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/tabler-icons.min.css" />
+  <style>
+    :root {
+      --c1: #00e5ff; --c2: #7b2fff; --c3: #ff2d78;
+      --green: #1D9E75; --orange: #ff8c00; --yellow: #ffc832;
+      --bg: #050a12; --bg2: #0a1220; --bg3: #0d1a2e;
+      --line: rgba(0,229,255,0.15); --line2: rgba(0,229,255,0.08);
+      --text: #e0f7ff; --muted: rgba(0,229,255,0.45);
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Rajdhani', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: var(--sans); color: var(--text); min-height: 100vh; }
+
+    /* ── ÉCRAN DE CONNEXION ── */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: var(--bg);
+    }
+    .login-box {
+      width: 420px; border: 1px solid var(--line); background: var(--bg2); padding: 40px;
+    }
+    .login-logo { color: var(--c1); font-size: 22px; font-weight: 600; letter-spacing: 3px; margin-bottom: 6px; }
+    .login-sub { color: var(--muted); font-size: 11px; font-family: var(--mono); letter-spacing: 1px; margin-bottom: 32px; }
+    .field-label { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; font-family: var(--mono); margin-bottom: 6px; }
+    .field-input {
+      width: 100%; background: var(--bg3); border: 1px solid var(--line);
+      color: var(--text); font-family: var(--mono); font-size: 13px;
+      padding: 10px 12px; outline: none; margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .field-input:focus { border-color: var(--c1); }
+    .field-input::placeholder { color: rgba(0,229,255,0.2); }
+    .btn-login {
+      width: 100%; background: var(--c1); color: #000; border: none;
+      font-family: var(--sans); font-size: 14px; font-weight: 600;
+      letter-spacing: 2px; padding: 12px; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-login:hover { opacity: 0.85; }
+    .btn-login:disabled { opacity: 0.4; cursor: not-allowed; }
+    .login-error { color: var(--c3); font-size: 11px; font-family: var(--mono); margin-top: 12px; display: none; }
+    .login-hint { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 20px; line-height: 1.6; }
+
+    /* ── APP PRINCIPALE ── */
+    #app { display: none; min-height: 100vh; flex-direction: column; }
+    .shell { display: flex; flex: 1; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 210px; background: var(--bg2); border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .brand { padding: 20px 18px 16px; border-bottom: 1px solid var(--line); }
+    .brand-name { color: var(--c1); font-size: 16px; font-weight: 600; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
+    .brand-sub { color: var(--muted); font-size: 10px; font-family: var(--mono); margin-top: 3px; letter-spacing: 1px; }
+    .user-block {
+      padding: 12px 16px; border-bottom: 1px solid var(--line);
+      display: flex; gap: 10px; align-items: center;
+    }
+    .av {
+      width: 34px; height: 34px; border: 1px solid var(--c1);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--c1); font-size: 12px; font-weight: 600;
+      font-family: var(--mono); flex-shrink: 0;
+    }
+    .av-name { color: var(--text); font-size: 13px; font-weight: 500; }
+    .av-cls { color: var(--muted); font-size: 10px; font-family: var(--mono); margin-top: 1px; }
+    nav { flex: 1; padding: 8px 0; }
+    .ni {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 16px; color: var(--muted); font-size: 13px;
+      letter-spacing: 0.8px; cursor: pointer; transition: all 0.15s;
+      border-left: 2px solid transparent; font-weight: 500;
+    }
+    .ni:hover { color: var(--c1); background: rgba(0,229,255,0.05); }
+    .ni.on { color: var(--c1); background: rgba(0,229,255,0.07); border-left-color: var(--c1); }
+    .ni i { font-size: 15px; width: 17px; }
+    .logout-btn {
+      margin: 12px 16px; border: 1px solid rgba(255,45,120,0.3);
+      color: var(--c3); font-size: 11px; font-family: var(--mono);
+      letter-spacing: 1px; padding: 8px; cursor: pointer;
+      background: transparent; display: flex; align-items: center;
+      gap: 6px; transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(255,45,120,0.08); }
+
+    /* ── MAIN ── */
+    .main { flex: 1; background: var(--bg); padding: 20px; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line2);
+    }
+    .page-title { color: var(--c1); font-size: 20px; font-weight: 600; letter-spacing: 2px; }
+    .page-date { color: var(--muted); font-size: 10px; font-family: var(--mono); margin-top: 3px; letter-spacing: 1px; }
+    .ticon {
+      width: 30px; height: 30px; border: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 15px; cursor: pointer; transition: all 0.15s;
+    }
+    .ticon:hover { border-color: var(--c1); color: var(--c1); }
+
+    /* ── VUES ── */
+    .view { display: none; }
+    .view.on { display: block; }
+
+    /* ── LOADER ── */
+    .loader {
+      text-align: center; padding: 60px 20px;
+      color: var(--muted); font-family: var(--mono); font-size: 12px;
+      letter-spacing: 2px;
+    }
+    .loader::after { content: ''; animation: dots 1.2s steps(3,end) infinite; }
+    @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
+    /* ── STATS ── */
+    .stats3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+    .sc {
+      background: var(--bg2); border: 1px solid var(--line);
+      padding: 14px; position: relative; overflow: hidden; border-top: 2px solid var(--c1);
+    }
+    .sc .lbl { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; font-family: var(--mono); margin-bottom: 8px; }
+    .sc .val { font-size: 26px; font-weight: 600; color: #fff; font-family: var(--mono); }
+    .sc .hint { font-size: 10px; color: rgba(0,229,255,0.3); font-family: var(--mono); margin-top: 4px; }
+
+    /* ── PANELS ── */
+    .g2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+    .panel { background: var(--bg2); border: 1px solid var(--line); padding: 14px; }
+    .panel-hd {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line2);
+    }
+    .panel-hd i { font-size: 14px; color: var(--c1); }
+    .panel-hd span { font-size: 11px; font-weight: 600; letter-spacing: 2px; color: var(--c1); }
+
+    /* ── COURS ── */
+    .course-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line2); }
+    .course-row:last-child { border: none; padding-bottom: 0; }
+    .cbar { width: 3px; align-self: stretch; min-height: 30px; flex-shrink: 0; }
+    .cinfo { flex: 1; min-width: 0; }
+    .cname { font-size: 13px; color: var(--text); font-weight: 500; }
+    .ctime { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+    .cpill { font-size: 10px; padding: 2px 7px; border: 1px solid; letter-spacing: 0.5px; font-family: var(--mono); white-space: nowrap; }
+    .canceled { opacity: 0.4; text-decoration: line-through; }
+
+    /* ── NOTES ── */
+    .grade-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--line2); }
+    .grade-row:last-child { border: none; }
+    .gdot { width: 8px; height: 8px; flex-shrink: 0; }
+    .gname { font-size: 12px; color: var(--text); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .gdate { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+    .score { font-size: 15px; font-weight: 600; font-family: var(--mono); }
+    .gmoy { font-size: 10px; color: var(--muted); font-family: var(--mono); text-align: right; margin-top: 1px; }
+
+    /* ── MOYENNES ── */
+    .avg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .avg-item { background: var(--bg3); border: 1px solid var(--line2); padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+    .avg-bar { width: 3px; align-self: stretch; flex-shrink: 0; }
+    .avg-left { flex: 1; min-width: 0; }
+    .avg-name { font-size: 12px; color: var(--text); font-weight: 500; }
+    .avg-tch { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+    .avg-score { font-size: 18px; font-weight: 600; font-family: var(--mono); }
+
+    /* ── EMPLOI DU TEMPS ── */
+    .week-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .week-btn {
+      border: 1px solid var(--line); background: transparent; color: var(--muted);
+      font-size: 14px; width: 28px; height: 28px; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; transition: all 0.15s;
+    }
+    .week-btn:hover { border-color: var(--c1); color: var(--c1); }
+    .week-label { color: var(--c1); font-family: var(--mono); font-size: 11px; letter-spacing: 1px; }
+    .tt-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+    .dh { font-size: 10px; color: var(--muted); text-align: center; padding: 4px 0 10px; letter-spacing: 1.5px; font-family: var(--mono); }
+    .slot { padding: 8px; margin-bottom: 6px; border-left: 2px solid; }
+    .slot .sn { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+    .slot .st { font-size: 10px; margin-top: 2px; font-family: var(--mono); opacity: 0.7; }
+    .abs-tag { font-size: 9px; padding: 1px 4px; background: rgba(255,45,120,.15); color: var(--c3); border: 1px solid rgba(255,45,120,.3); display: inline-block; margin-top: 4px; font-family: var(--mono); letter-spacing: 0.5px; }
+
+    /* ── DEVOIRS ── */
+    .hw-row { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line2); align-items: flex-start; }
+    .hw-row:last-child { border: none; }
+    .chk { width: 16px; height: 16px; border: 1px solid rgba(0,229,255,.4); flex-shrink: 0; margin-top: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .chk:hover { border-color: var(--c1); }
+    .chk.done { background: var(--c1); border-color: var(--c1); }
+    .chk.done i { color: #000; font-size: 10px; }
+    .chk i { display: none; font-size: 10px; }
+    .chk.done i { display: block; }
+    .hw-txt { font-size: 12px; color: var(--text); line-height: 1.5; }
+    .hw-meta { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+    .due-red { color: var(--c3) !important; }
+
+    /* ── ERREUR ── */
+    .err-box { background: rgba(255,45,120,0.08); border: 1px solid rgba(255,45,120,0.3); padding: 12px 14px; color: var(--c3); font-size: 11px; font-family: var(--mono); margin: 12px 0; }
+
+    /* ── TICKER ── */
+    .ticker { font-family: var(--mono); font-size: 10px; color: rgba(0,229,255,0.2); letter-spacing: 2px; text-align: center; padding: 6px 0; border-bottom: 1px solid var(--line2); }
+
+    /* ── COULEURS MATIÈRES ── */
+    .c-math { color: #00e5ff; } .bg-math { background: rgba(0,229,255,0.07); border-color: #00e5ff; }
+    .c-phys { color: #1D9E75; } .bg-phys { background: rgba(29,158,117,0.07); border-color: #1D9E75; }
+    .c-philo { color: #7b2fff; } .bg-philo { background: rgba(123,47,255,0.07); border-color: #7b2fff; }
+    .c-hist { color: #ff8c00; } .bg-hist { background: rgba(255,140,0,0.07); border-color: #ff8c00; }
+    .c-fr { color: #ffc832; } .bg-fr { background: rgba(255,200,50,0.07); border-color: #ffc832; }
+    .c-svt { color: #00c864; } .bg-svt { background: rgba(0,200,100,0.07); border-color: #00c864; }
+    .c-ang { color: #ff2d78; } .bg-ang { background: rgba(255,45,120,0.07); border-color: #ff2d78; }
+    .c-esp { color: #ff6b6b; } .bg-esp { background: rgba(255,107,107,0.07); border-color: #ff6b6b; }
+    .c-eps { color: #4ade80; } .bg-eps { background: rgba(74,222,128,0.07); border-color: #4ade80; }
+    .c-default { color: #aaa; } .bg-default { background: rgba(170,170,170,0.07); border-color: #aaa; }
+  </style>
+</head>
+<body>
+
+<!-- ══ CONNEXION ══════════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo"><i class="ti ti-circuit-cell"></i> NEXUS·ENT</div>
+    <div class="login-sub">CONNEXION PRONOTE // SECURE CHANNEL</div>
+
+    <div class="field-label">URL DE TON ÉTABLISSEMENT PRONOTE</div>
+    <input class="field-input" id="inp-url" type="url" placeholder="https://0XXXXXXX.index-education.net/pronote/" />
+
+    <div class="field-label">IDENTIFIANT</div>
+    <input class="field-input" id="inp-user" type="text" placeholder="prenom.nom" />
+
+    <div class="field-label">MOT DE PASSE</div>
+    <input class="field-input" id="inp-pass" type="password" placeholder="••••••••" />
+
+    <button class="btn-login" id="btn-login" onclick="doLogin()">
+      CONNEXION
+    </button>
+    <div class="login-error" id="login-error"></div>
+
+    <div class="login-hint">
+      Ton URL Pronote ressemble à :<br>
+      <strong>https://0750000X.index-education.net/pronote/</strong><br><br>
+      Elle se trouve dans ton navigateur quand tu vas sur Pronote habituel.
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════════════════════════════════ -->
+<div id="app">
+  <div class="ticker" id="ticker">SYS:ONLINE // MODULE:ENT // LYCÉE // CHARGEMENT</div>
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-name"><i class="ti ti-circuit-cell"></i>NEXUS·ENT</div>
+        <div class="brand-sub" id="school-name">CHARGEMENT...</div>
+      </div>
+      <div class="user-block">
+        <div class="av" id="user-av">??</div>
+        <div>
+          <div class="av-name" id="user-name">Élève</div>
+          <div class="av-cls" id="user-cls">...</div>
+        </div>
+      </div>
+      <nav>
+        <div class="ni on" onclick="sw('accueil',this)"><i class="ti ti-home"></i>Accueil</div>
+        <div class="ni" onclick="sw('emploi',this)"><i class="ti ti-calendar-week"></i>Emploi du temps</div>
+        <div class="ni" onclick="sw('notes',this)"><i class="ti ti-chart-bar"></i>Notes</div>
+        <div class="ni" onclick="sw('devoirs',this)"><i class="ti ti-pencil"></i>Devoirs</div>
+      </nav>
+      <button class="logout-btn" onclick="logout()">
+        <i class="ti ti-logout"></i> DÉCONNEXION
+      </button>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="page-title" id="ptitle">// ACCUEIL</div>
+          <div class="page-date" id="pdate">...</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div class="ticon" onclick="refreshCurrent()"><i class="ti ti-refresh"></i></div>
+        </div>
+      </div>
+
+      <!-- ACCUEIL -->
+      <div id="v-accueil" class="view on">
+        <div id="home-content"><div class="loader">CHARGEMENT DES DONNÉES</div></div>
+      </div>
+
+      <!-- EMPLOI DU TEMPS -->
+      <div id="v-emploi" class="view">
+        <div class="week-nav">
+          <button class="week-btn" onclick="changeWeek(-1)"><i class="ti ti-chevron-left"></i></button>
+          <span class="week-label" id="week-label">SEMAINE ...</span>
+          <button class="week-btn" onclick="changeWeek(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div id="tt-content"><div class="loader">CHARGEMENT DE L'EMPLOI DU TEMPS</div></div>
+      </div>
+
+      <!-- NOTES -->
+      <div id="v-notes" class="view">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div class="panel-hd" style="margin:0;border:none;padding:0;"><i class="ti ti-filter"></i><span>PÉRIODE</span></div>
+          <select id="period-select" onchange="loadGrades()" style="background:var(--bg2);border:1px solid var(--line);color:var(--c1);font-family:var(--mono);font-size:11px;padding:6px 10px;letter-spacing:1px;outline:none;cursor:pointer;"></select>
+        </div>
+        <div id="grades-content"><div class="loader">CHARGEMENT DES NOTES</div></div>
+      </div>
+
+      <!-- DEVOIRS -->
+      <div id="v-devoirs" class="view">
+        <div class="week-nav">
+          <button class="week-btn" onclick="changeHwWeek(-1)"><i class="ti ti-chevron-left"></i></button>
+          <span class="week-label" id="hw-week-label">SEMAINE ...</span>
+          <button class="week-btn" onclick="changeHwWeek(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div id="hw-content"><div class="loader">CHARGEMENT DES DEVOIRS</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+// Remplace cette URL par celle de ton backend Render une fois déployé !
+const API = localStorage.getItem('nexus_api') || 'http://localhost:3001';
+
+let SESSION_ID = localStorage.getItem('nexus_session');
+let currentView = 'accueil';
+let currentWeekOffset = 0;
+let currentHwWeekOffset = 0;
+let gradesData = null;
+let periodsData = [];
+
+// ─── COULEURS PAR MATIÈRE ─────────────────────────────────────────────────────
+const SUBJECT_COLORS = [
+  { keys: ['math'], cls: 'math', hex: '#00e5ff' },
+  { keys: ['physique', 'chimie', 'pc', 'phys'], cls: 'phys', hex: '#1D9E75' },
+  { keys: ['philo', 'philosophie'], cls: 'philo', hex: '#7b2fff' },
+  { keys: ['histoire', 'géo', 'geo', 'hg'], cls: 'hist', hex: '#ff8c00' },
+  { keys: ['français', 'francais', 'fr'], cls: 'fr', hex: '#ffc832' },
+  { keys: ['svt', 'biologie'], cls: 'svt', hex: '#00c864' },
+  { keys: ['anglais', 'lv1', 'english'], cls: 'ang', hex: '#ff2d78' },
+  { keys: ['espagnol', 'lv2', 'español'], cls: 'esp', hex: '#ff6b6b' },
+  { keys: ['eps', 'sport'], cls: 'eps', hex: '#4ade80' },
+];
+
+function subjectColor(name = '') {
+  const n = name.toLowerCase();
+  for (const s of SUBJECT_COLORS) {
+    if (s.keys.some(k => n.includes(k))) return s;
+  }
+  return { cls: 'default', hex: '#aaa' };
+}
+
+function scoreColor(val, outOf = 20) {
+  if (val === null) return '#aaa';
+  const ratio = val / outOf;
+  if (ratio >= 0.7) return '#1D9E75';
+  if (ratio >= 0.5) return '#ff8c00';
+  return '#ff2d78';
+}
+
+function fmtScore(s) {
+  if (!s || s.disabled || s.value === null) return s?.status ?? '—';
+  return parseFloat(s.value).toFixed(2).replace('.', ',');
+}
+
+// ─── DATE HELPERS ─────────────────────────────────────────────────────────────
+function getWeekMonday(offset = 0) {
+  const d = new Date();
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1 + offset * 7);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' }).toUpperCase();
+}
+
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function fmtWeekLabel(offset) {
+  const mon = getWeekMonday(offset);
+  const fri = new Date(mon); fri.setDate(fri.getDate() + 4);
+  return `SEM·${getWeekNumber(mon)} // ${mon.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})} → ${fri.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}`;
+}
+
+function getWeekNumber(d) {
+  const onejan = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const url = document.getElementById('inp-url').value.trim();
+  const username = document.getElementById('inp-user').value.trim();
+  const password = document.getElementById('inp-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+
+  errEl.style.display = 'none';
+  if (!url || !username || !password) {
+    errEl.textContent = 'ERR // Tous les champs sont requis'; errEl.style.display = 'block'; return;
+  }
+
+  btn.disabled = true; btn.textContent = 'CONNEXION EN COURS...';
+
+  try {
+    const res = await fetch(`${API}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    SESSION_ID = data.sessionId;
+    localStorage.setItem('nexus_session', SESSION_ID);
+    localStorage.setItem('nexus_user', JSON.stringify({ name: data.name, className: data.className, schoolName: data.schoolName }));
+
+    initApp(data);
+  } catch (e) {
+    errEl.textContent = `ERR // ${e.message}`;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'CONNEXION';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('nexus_session');
+  localStorage.removeItem('nexus_user');
+  SESSION_ID = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function apiFetch(path) {
+  const res = await fetch(`${API}${path}`, { headers: { 'x-session-id': SESSION_ID } });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error);
+  return data;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function initApp(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  const initials = user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('user-av').textContent = initials;
+  document.getElementById('user-name').textContent = user.name;
+  document.getElementById('user-cls').textContent = user.className || '...';
+  document.getElementById('school-name').textContent = user.schoolName?.toUpperCase() || 'PRONOTE';
+
+  const now = new Date();
+  document.getElementById('pdate').textContent =
+    now.toLocaleDateString('fr-FR', { weekday: 'long', day:'2-digit', month: 'long', year: 'numeric' }).toUpperCase()
+    + ' // SEM·' + getWeekNumber(now);
+  document.getElementById('ticker').textContent =
+    `SYS:ONLINE // MODULE:ENT // ${user.schoolName?.toUpperCase() || 'PRONOTE'} // ${user.name.toUpperCase()}`;
+
+  loadHome();
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+const titles = { accueil: '// ACCUEIL', emploi: '// EMPLOI DU TEMPS', notes: '// NOTES & MOYENNES', devoirs: '// DEVOIRS' };
+
+function sw(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
+  document.getElementById('v-' + id).classList.add('on');
+  el.classList.add('on');
+  document.getElementById('ptitle').textContent = titles[id];
+  currentView = id;
+
+  if (id === 'emploi') loadTimetable();
+  else if (id === 'notes') loadGrades();
+  else if (id === 'devoirs') loadHomework();
+  else if (id === 'accueil') loadHome();
+}
+
+function refreshCurrent() {
+  if (currentView === 'accueil') loadHome();
+  else if (currentView === 'emploi') loadTimetable();
+  else if (currentView === 'notes') loadGrades();
+  else if (currentView === 'devoirs') loadHomework();
+}
+
+// ─── ACCUEIL ──────────────────────────────────────────────────────────────────
+async function loadHome() {
+  const el = document.getElementById('home-content');
+  el.innerHTML = '<div class="loader">CHARGEMENT</div>';
+  try {
+    const today = new Date().toISOString();
+    const [ttData, hwData] = await Promise.all([
+      apiFetch(`/api/timetable?date=${today}`),
+      apiFetch(`/api/homework?date=${today}`),
+    ]);
+
+    const todayKey = new Date().toISOString().split('T')[0];
+    const todayDay = ttData.timetable.find(d => d.date === todayKey);
+    const todayCourses = todayDay?.courses ?? [];
+    const pendingHw = hwData.homework.filter(h => !h.done);
+
+    el.innerHTML = `
+      <div class="stats3">
+        <div class="sc" style="border-top-color:var(--c1)">
+          <div class="lbl">COURS AUJOURD'HUI</div>
+          <div class="val">${String(todayCourses.filter(c=>!c.canceled).length).padStart(2,'0')}</div>
+          <div class="hint">${todayCourses[0] ? 'NEXT → ' + todayCourses[0].subject.substring(0,12).toUpperCase() : 'AUCUN COURS'}</div>
+        </div>
+        <div class="sc" style="border-top-color:var(--c2)">
+          <div class="lbl">DEVOIRS EN ATTENTE</div>
+          <div class="val">${String(pendingHw.length).padStart(2,'0')}</div>
+          <div class="hint">${pendingHw[0] ? '!! ' + pendingHw[0].subject.substring(0,16).toUpperCase() : 'TOUT EST BON'}</div>
+        </div>
+        <div class="sc" style="border-top-color:var(--c3)">
+          <div class="lbl">CETTE SEMAINE</div>
+          <div class="val">${String(ttData.timetable.reduce((a,d)=>a+d.courses.length,0)).padStart(2,'0')}</div>
+          <div class="hint">COURS AU TOTAL</div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="panel">
+          <div class="panel-hd"><i class="ti ti-clock"></i><span>COURS DU JOUR</span></div>
+          ${todayCourses.length === 0
+            ? '<div style="color:var(--muted);font-family:var(--mono);font-size:11px;padding:12px 0">AUCUN COURS AUJOURD\'HUI</div>'
+            : todayCourses.map(c => renderCourseRow(c)).join('')}
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><i class="ti ti-pencil"></i><span>DEVOIRS À FAIRE</span></div>
+          ${pendingHw.length === 0
+            ? '<div style="color:var(--muted);font-family:var(--mono);font-size:11px;padding:12px 0">AUCUN DEVOIR EN ATTENTE</div>'
+            : pendingHw.slice(0,5).map(h => renderHwRow(h)).join('')}
+        </div>
+      </div>`;
+  } catch (e) {
+    el.innerHTML = errBox(e.message);
+  }
+}
+
+// ─── EMPLOI DU TEMPS ──────────────────────────────────────────────────────────
+async function loadTimetable() {
+  const el = document.getElementById('tt-content');
+  el.innerHTML = '<div class="loader">CHARGEMENT DE L\'EMPLOI DU TEMPS</div>';
+  document.getElementById('week-label').textContent = fmtWeekLabel(currentWeekOffset);
+
+  try {
+    const mon = getWeekMonday(currentWeekOffset);
+    const data = await apiFetch(`/api/timetable?date=${mon.toISOString()}`);
+
+    // Construire grille Lun→Ven
+    const days = [0,1,2,3,4].map(i => {
+      const d = new Date(mon); d.setDate(d.getDate() + i);
+      return d.toISOString().split('T')[0];
+    });
+
+    el.innerHTML = `<div class="panel"><div class="tt-grid">${days.map(dayKey => {
+      const dayData = data.timetable.find(d => d.date === dayKey);
+      const courses = dayData?.courses ?? [];
+      const d = new Date(dayKey);
+      return `<div>
+        <div class="dh">${d.toLocaleDateString('fr-FR',{weekday:'short'}).toUpperCase()}·${d.getDate()}</div>
+        ${courses.length === 0
+          ? '<div style="color:var(--muted);font-size:10px;font-family:var(--mono);text-align:center;padding-top:20px;">LIBRE</div>'
+          : courses.map(c => {
+              const col = subjectColor(c.subject);
+              return `<div class="slot bg-${col.cls}" style="color:var(--c-${col.cls})">
+                <div class="sn c-${col.cls}">${c.subject}</div>
+                <div class="st c-${col.cls}">${fmtTime(c.from)} – ${fmtTime(c.to)}</div>
+                ${c.room ? `<div class="st c-${col.cls}">${c.room}</div>` : ''}
+                ${c.canceled ? '<div class="abs-tag">ANNULÉ</div>' : ''}
+              </div>`;
+            }).join('')}
+      </div>`;
+    }).join('')}</div></div>`;
+  } catch (e) {
+    el.innerHTML = errBox(e.message);
+  }
+}
+
+function changeWeek(d) { currentWeekOffset += d; loadTimetable(); }
+
+// ─── NOTES ────────────────────────────────────────────────────────────────────
+async function loadGrades() {
+  const el = document.getElementById('grades-content');
+  el.innerHTML = '<div class="loader">CHARGEMENT DES NOTES</div>';
+
+  try {
+    const select = document.getElementById('period-select');
+    const period = select.value || undefined;
+    const url = period ? `/api/grades?period=${encodeURIComponent(period)}` : '/api/grades';
+    const data = await apiFetch(url);
+
+    // Remplir le sélecteur de périodes
+    if (data.periods?.length && select.options.length === 0) {
+      data.periods.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.name; opt.textContent = p.name;
+        select.appendChild(opt);
+      });
+      select.value = data.period.name;
+    }
+
+    const g = data.grades;
+    el.innerHTML = `
+      <div class="stats3" style="margin-bottom:12px">
+        <div class="sc" style="border-top-color:var(--c1)">
+          <div class="lbl">MOYENNE GÉNÉRALE</div>
+          <div class="val" style="color:${scoreColor(g.studentOverall?.value, 20)}">${fmtScore(g.studentOverall)}</div>
+          <div class="hint">CLASSE: ${fmtScore(g.classAverage)}</div>
+        </div>
+        <div class="sc" style="border-top-color:var(--green)">
+          <div class="lbl">MATIÈRES</div>
+          <div class="val">${String(g.subjects.length).padStart(2,'0')}</div>
+          <div class="hint">ÉVALUÉES CE TRIMESTRE</div>
+        </div>
+        <div class="sc" style="border-top-color:var(--c2)">
+          <div class="lbl">NOTES SAISIES</div>
+          <div class="val">${String(g.subjects.reduce((a,s)=>a+s.grades.length,0)).padStart(2,'0')}</div>
+          <div class="hint">TOTAL CE TRIMESTRE</div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:12px">
+        <div class="panel-hd"><i class="ti ti-chart-bar"></i><span>MOYENNES PAR MATIÈRE</span></div>
+        <div class="avg-grid">
+          ${g.subjects.map(s => {
+            const col = subjectColor(s.name);
+            const val = s.studentAverage?.value;
+            return `<div class="avg-item">
+              <div class="avg-bar" style="background:${col.hex}"></div>
+              <div class="avg-left">
+                <div class="avg-name">${s.name}</div>
+              </div>
+              <div class="avg-score" style="color:${scoreColor(val)}">${fmtScore(s.studentAverage)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hd"><i class="ti ti-list"></i><span>TOUTES LES NOTES</span></div>
+        ${g.subjects.flatMap(s => s.grades).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(gr => {
+          const col = subjectColor(gr.subjectName);
+          const val = gr.student?.value;
+          return `<div class="grade-row">
+            <div>
+              <div class="gname">
+                <div class="gdot" style="background:${col.hex}"></div>
+                ${gr.subjectName}
+                ${gr.description ? `<span style="font-size:10px;color:var(--muted);font-family:var(--mono)">· ${gr.description}</span>` : ''}
+              </div>
+              <div class="gdate">${new Date(gr.date).toLocaleDateString('fr-FR')}</div>
+            </div>
+            <div>
+              <div class="score" style="color:${scoreColor(val)}">${fmtScore(gr.student)}/${fmtScore(gr.outOf)}</div>
+              <div class="gmoy">moy·cl ${fmtScore(gr.average)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch (e) {
+    el.innerHTML = errBox(e.message);
+  }
+}
+
+// ─── DEVOIRS ──────────────────────────────────────────────────────────────────
+async function loadHomework() {
+  const el = document.getElementById('hw-content');
+  el.innerHTML = '<div class="loader">CHARGEMENT DES DEVOIRS</div>';
+  document.getElementById('hw-week-label').textContent = fmtWeekLabel(currentHwWeekOffset);
+
+  try {
+    const mon = getWeekMonday(currentHwWeekOffset);
+    const data = await apiFetch(`/api/homework?date=${mon.toISOString()}`);
+
+    if (data.homework.length === 0) {
+      el.innerHTML = '<div class="panel"><div style="color:var(--muted);font-family:var(--mono);font-size:11px;padding:20px 0;text-align:center">AUCUN DEVOIR CETTE SEMAINE</div></div>';
+      return;
+    }
+
+    el.innerHTML = `<div class="panel">
+      <div class="panel-hd"><i class="ti ti-pencil"></i><span>TRAVAIL À FAIRE</span></div>
+      ${data.homework.map(h => renderHwRow(h)).join('')}
+    </div>`;
+  } catch (e) {
+    el.innerHTML = errBox(e.message);
+  }
+}
+
+function changeHwWeek(d) { currentHwWeekOffset += d; loadHomework(); }
+
+// ─── RENDER HELPERS ───────────────────────────────────────────────────────────
+function renderCourseRow(c) {
+  const col = subjectColor(c.subject);
+  return `<div class="course-row ${c.canceled ? 'canceled' : ''}">
+    <div class="cbar" style="background:${col.hex}"></div>
+    <div class="cinfo">
+      <div class="cname">${c.subject}</div>
+      <div class="ctime">${fmtTime(c.from)} → ${fmtTime(c.to)}${c.teacher ? ' // ' + c.teacher : ''}</div>
+    </div>
+    ${c.room ? `<div class="cpill c-${col.cls}" style="border-color:${col.hex}">${c.room}</div>` : ''}
+    ${c.canceled ? '<div class="abs-tag">ANNULÉ</div>' : ''}
+  </div>`;
+}
+
+function renderHwRow(h) {
+  const col = subjectColor(h.subject);
+  const due = h.dueDate ? new Date(h.dueDate) : null;
+  const isUrgent = due && (due - new Date()) < 86400000 * 2;
+  return `<div class="hw-row">
+    <div class="chk ${h.done ? 'done' : ''}" onclick="this.classList.toggle('done')">
+      <i class="ti ti-check"></i>
+    </div>
+    <div>
+      <div class="hw-txt">${h.content || '(sans description)'}</div>
+      <div class="hw-meta">
+        <span style="display:inline-block;width:8px;height:8px;background:${col.hex};vertical-align:middle;margin-right:4px"></span>
+        ${h.subject}
+        ${due ? `<span class="${isUrgent ? 'due-red' : ''}">// ${due.toLocaleDateString('fr-FR')}${isUrgent ? ' !!' : ''}</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function errBox(msg) {
+  return `<div class="err-box">ERR // ${msg}</div>`;
+}
+
+// ─── AUTO-LOGIN ────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('nexus_user');
+  if (SESSION_ID && saved) {
+    const user = JSON.parse(saved);
+    initApp(user);
+  }
+});
+</script>
+</body>
+</html>
